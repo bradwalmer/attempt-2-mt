@@ -1,0 +1,17 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="style.css"><title>Results · Overlooked Tax Finder</title></head><body>
+<main class="wrap" id="m"><h2>Your results</h2><div id="out"></div></main>
+<script src="data.js"></script><script src="matcher.js"></script><script src="site.js"></script><script>
+const a=Site.load(),out=document.getElementById('out');
+if(!a){out.innerHTML='<div class="card"><p>No answers yet.</p><a class="btn" href="find.html">Start the questionnaire</a></div>'}
+else{const Q=Object.fromEntries(TAXDATA.questions.map(q=>[q.key,q.label]));const lab=(k)=>{const q=TAXDATA.questions.find(x=>x.key===k);return q.options?(q.options.find(o=>o[0]===a[k])||[])[1]:Q[k]};
+ const src=['wages','selfEmp','invest','rental','retireInc','ssBenefits','unemployment'].filter(k=>a[k]).map(k=>Q[k].split(' (')[0]);
+ const sum=document.createElement('div');sum.className='card';const dl=document.createElement('dl');
+ [['Filing status',lab('filing')],['Household income',lab('income')],['Income sources',src.length?src.join('; '):'None selected'],['Dependents',(lab('dependents')||'')+(a.kidsUnder17>0?' ('+lab('kidsUnder17')+' under 17)':'')]].forEach(([k,v])=>{const t=document.createElement('dt'),d=document.createElement('dd');t.textContent=k;d.textContent=v||'Not provided';dl.append(t,d)});
+ const h=document.createElement('h3');h.textContent='Your profile';sum.append(h,dl);out.append(sum);
+ const keys=TAXDATA.questions.map(q=>q.key);
+ const hits=TAXMATCH.match(a,TAXDATA.provisions).map(p=>({...p,because:p.because.filter(k=>a[k]&&a[k]!=='0'&&a[k]!==false).map(k=>TAXDATA.questions.find(q=>q.key===k)).filter(Boolean).map(q=>q.options?q.label+': '+lab(q.key):q.label).join('; ')}));
+ [['likely','Strong matches'],['check','Worth checking']].forEach(([lv,title])=>{const g=hits.filter(p=>p.matchLevel===lv);if(!g.length)return;const e=document.createElement('h2');e.textContent=title+' ('+g.length+')';out.append(e);g.forEach(p=>out.append(Site.card(p)))});
+ if(!hits.length){const c=document.createElement('div');c.className='card';c.textContent='No provisions matched your answers. Review your answers, or browse the library.';out.append(c)}
+ const r=document.createElement('div');r.className='row noprint';r.innerHTML='<a class="btn alt" href="find.html">Edit answers</a><button class="btn alt" onclick="window.print()">Print</button><button class="btn" id="clr">Clear my answers</button>';out.append(r);
+ document.getElementById('clr').onclick=()=>{Site.clear();location.href='index.html'}}
+</script></body></html>

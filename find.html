@@ -1,0 +1,18 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="style.css"><title>Questionnaire · Overlooked Tax Finder</title></head><body>
+<main class="wrap"><div id="step" class="mut"></div><div class="bar"><div id="p"></div></div>
+<div class="card"><h2 id="t"></h2><p id="i" class="mut"></p><div id="f"></div></div>
+<div class="row"><button class="btn alt" id="back">Back</button><button class="btn" id="next">Next</button></div></main>
+<script src="data.js"></script><script src="site.js"></script><script>
+const S=TAXDATA.sections,a=Site.load()||{};let i=0;
+S.forEach(s=>s.fields.forEach(f=>{if(f.type==='select'&&a[f.key]===undefined)a[f.key]='';}));
+function render(){const s=S[i];document.getElementById('step').textContent='Step '+(i+1)+' of '+S.length;
+ document.getElementById('p').style.width=((i+1)/S.length*100)+'%';document.getElementById('t').textContent=s.title;document.getElementById('i').textContent=s.intro;
+ const box=document.getElementById('f');box.replaceChildren();
+ s.fields.filter(f=>!f.showIf||a[f.showIf]).forEach(f=>{const w=document.createElement('div'),l=document.createElement('label');
+  if(f.type==='check'){w.className='field chk';const c=document.createElement('input');c.type='checkbox';c.checked=!!a[f.key];c.onchange=()=>{a[f.key]=c.checked};l.append(c,f.label);w.append(l)}
+  else{w.className='field';l.textContent=f.label;const sel=document.createElement('select');[['','Select one'],...f.options].forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;sel.append(o)});sel.value=a[f.key];sel.onchange=()=>{a[f.key]=sel.value};w.append(l,sel)}
+  box.append(w)});
+ document.getElementById('back').style.visibility=i?'visible':'hidden';document.getElementById('next').textContent=i===S.length-1?'See my results':'Next';}
+document.getElementById('back').onclick=()=>{Site.save(a);i--;render()};
+document.getElementById('next').onclick=()=>{Site.save(a);if(i===S.length-1)location.href='results.html';else{i++;render();window.scrollTo(0,0)}};
+render();</script></body></html>
